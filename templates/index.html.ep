@@ -1,0 +1,5 @@
+% layout 'default', title => 'The beginn..';
+<h5>Layout's content</h5>
+<p>Hello World!</p>
+<h5>App's content</h5>
+<p><%= $moreContent %></p>
