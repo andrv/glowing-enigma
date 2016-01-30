@@ -10,6 +10,8 @@
 #===============================================================================
 
 use Mojolicious::Lite;
+my $config = plugin 'Config';
+
 plugin 'TagHelpers';
 
 get '/' => sub {
@@ -45,6 +47,12 @@ get '/taghelpers' => sub {
         template => 'index',
         moreContent => 'Using tag helpers from Mojolicious',
     );
+};
+
+get '/showConfig' => sub {
+    my $c = shift;
+
+    $c->render( template => 'showConfig' );
 };
 
 app->start;
