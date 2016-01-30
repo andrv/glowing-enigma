@@ -1,0 +1,4 @@
+% layout 'default', title => 'Show configuration';
+%= t h5 => 'Configuration:';
+%= t p => 'Where is the user name?: '. $config->{userNameFile};
+%= t p => 'Where is the api key?: '. $config->{devApiKey};
