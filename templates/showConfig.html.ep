@@ -1,4 +1,10 @@
 % layout 'default', title => 'Show configuration';
-%= t h5 => 'Configuration:';
-%= t p => 'Where is the user name?: '. $config->{userNameFile};
-%= t p => 'Where is the api key?: '. $config->{devApiKey};
+<h5>Configuration:</h5>
+<p>Where is the user name?: <%= $config->{userNameFile} %></p>
+<p>Where is the api key?: <%= $config->{devApiKey} %></p>
+<p>
+  <ol>
+    <ul>Google user name: <%= $gUserName %></ul>
+    <ul>Google dev api key: <%= $gApiKey %></ul>
+  </ol>
+</p>

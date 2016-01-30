@@ -10,6 +10,8 @@
 #===============================================================================
 
 use Mojolicious::Lite;
+use Mojo::Asset::File;
+
 my $config = plugin 'Config';
 
 plugin 'TagHelpers';
@@ -52,7 +54,17 @@ get '/taghelpers' => sub {
 get '/showConfig' => sub {
     my $c = shift;
 
-    $c->render( template => 'showConfig' );
+    my $file = Mojo::Asset::File->new( path => $config->{userNameFile} );
+    my $gUserName = $file->slurp;
+    
+    $file = Mojo::Asset::File->new( path => $config->{devApiKey} );
+    my $gApiKey = $file->slurp;
+
+    $c->render(
+        template  => 'showConfig',
+        gUserName => $gUserName,
+        gApiKey   => $gApiKey,
+    );
 };
 
 app->start;
