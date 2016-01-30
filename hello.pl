@@ -1,9 +1,9 @@
 #!/usr/bin/env perl 
 #===============================================================================
 #
-#         FILE: hello-jerk.pl
+#         FILE: hello.pl
 #
-#        USAGE: ./hello-jerk.pl  
+#        USAGE: morbo hello.pl  
 #
 #  DESCRIPTION: mojolicious start
 #
