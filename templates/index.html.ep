@@ -1,4 +1,7 @@
 % layout 'default', title => 'The beginn..';
 <p>
-<%= link_to '/showConfig' => begin %>Show configuration<% end %>
+<ul>
+  <li><%= link_to '/fetchFile'  => begin %>Fetch source file<% end %></li>
+  <li><%= link_to '/showConfig' => begin %>Show configuration<% end %></li>
+</ul>
 </p>

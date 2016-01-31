@@ -47,4 +47,12 @@ get '/showConfig' => sub {
     );
 };
 
+get '/fetchFile' => sub {
+    my $c = shift;
+
+    $c->render(
+        template => 'fetchFile',
+    );
+};
+
 app->start;
