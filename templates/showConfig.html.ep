@@ -8,3 +8,6 @@
     <ul>Google dev api key: <%= $gApiKey %></ul>
   </ol>
 </p>
+<p>
+  <%= link_to '/' => begin %>Home<% end %>
+</p>

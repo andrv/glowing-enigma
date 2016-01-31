@@ -18,10 +18,7 @@ plugin 'TagHelpers';
 
 get '/' => sub {
     my $c = shift;
-    $c->render(
-        template => 'index',
-        moreContent => "Hello sombody!\nBye.\n",
-    );
+    $c->render( template => 'index' );
 };
 
 get '/foo' => sub {
@@ -31,23 +28,6 @@ get '/foo' => sub {
     $c->render(
         template => 'index',
         moreContent => "Hello foo '$user' sombody!\nBye.\n",
-    );
-};
-
-get '/bar' => sub {
-    my $c = shift;
-    $c->render(
-        template => 'index',
-        moreContent => "Hello bar sombody!\nBye.\n",
-    );
-};
-
-get '/taghelpers' => sub {
-    my $c = shift;
-
-    $c->render(
-        template => 'index',
-        moreContent => 'Using tag helpers from Mojolicious',
     );
 };
 
