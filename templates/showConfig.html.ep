@@ -1,12 +1,13 @@
 % layout 'default', title => 'Show configuration';
 <h5>Configuration:</h5>
-<p>Where is the user name?: <%= $config->{userNameFile} %></p>
-<p>Where is the api key?: <%= $config->{devApiKey} %></p>
 <p>
-  <ol>
-    <ul>Google user name: <%= $gUserName %></ul>
-    <ul>Google dev api key: <%= $gApiKey %></ul>
-  </ol>
+  <ul>
+    <li>User name location: <%= $config->{userNameFile} %></li>
+    <li>Api key location: <%= $config->{devApiKey} %></li>
+    <li>-----</li>
+    <li>Google user name: <%= $gUserName %></li>
+    <li>Google dev api key: <%= $gApiKey %></li>
+  </ul>
 </p>
 <p>
   <%= link_to '/' => begin %>Home<% end %>
