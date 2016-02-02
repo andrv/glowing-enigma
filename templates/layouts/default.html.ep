@@ -9,8 +9,8 @@
       % unless( current_route '' ) {
       <li><%= link_to '/' => begin %>Home<% end %></li>
       % }
-      % unless( current_route 'fetchFile' ) {
-      <li><%= link_to '/fetchFile' => begin %>Fetch source file<% end %></li>
+      % unless( current_route =~ m/work.*/ ) {
+      <li><%= link_to '/work' => begin %>Fetch source file<% end %></li>
       % }
       % unless( current_route 'showConfig' ) {
       <li><%= link_to '/showConfig' => begin %>Show configuration<% end %></li>

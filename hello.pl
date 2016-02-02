@@ -47,11 +47,21 @@ get '/showConfig' => sub {
     );
 };
 
-get '/fetchFile' => sub {
+get '/work' => sub {
     my $c = shift;
 
     $c->render(
-        template => 'fetchFile',
+        template => 'work',
+        action   => '',
+    );
+};
+
+get '/work/:action' => sub {
+    my $c = shift;
+
+    $c->render(
+        template => 'work',
+        action   => $c->stash( 'action' ),
     );
 };
 

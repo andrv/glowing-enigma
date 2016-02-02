@@ -1,4 +1,7 @@
 % layout 'default', title => 'Fetch source file';
 <h5>Fetching source file</h5>
 <p>
+% if( defined $action ) {
+&quot;<%= $action %>&quot;
+% }
 </p>
