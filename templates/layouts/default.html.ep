@@ -4,10 +4,17 @@
     <title><%= $title %></title>
   </head>
   <body>
+    %= dumper( 'current route:' => current_route )
     <ul>
+      % unless( current_route '' ) {
       <li><%= link_to '/' => begin %>Home<% end %></li>
+      % }
+      % unless( current_route 'fetchFile' ) {
       <li><%= link_to '/fetchFile' => begin %>Fetch source file<% end %></li>
+      % }
+      % unless( current_route 'showConfig' ) {
       <li><%= link_to '/showConfig' => begin %>Show configuration<% end %></li>
+      % }
     </ul>
     <%= content %>
   </body>
