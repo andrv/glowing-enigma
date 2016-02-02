@@ -2,6 +2,3 @@
 <h5>Fetching source file</h5>
 <p>
 </p>
-<p>
-  <%= link_to '/' => begin %>Home<% end %>
-</p>

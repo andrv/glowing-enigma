@@ -9,6 +9,3 @@
     <li>Google dev api key: <%= $gApiKey %></li>
   </ul>
 </p>
-<p>
-  <%= link_to '/' => begin %>Home<% end %>
-</p>

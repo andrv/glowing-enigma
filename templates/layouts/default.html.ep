@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html>
-  <head><title><%= $title %></title></head>
-  <body><%= content %></body>
+  <head>
+    <title><%= $title %></title>
+  </head>
+  <body>
+    <ul>
+      <li><%= link_to '/' => begin %>Home<% end %></li>
+      <li><%= link_to '/fetchFile' => begin %>Fetch source file<% end %></li>
+      <li><%= link_to '/showConfig' => begin %>Show configuration<% end %></li>
+    </ul>
+    <%= content %>
+  </body>
 </html>
