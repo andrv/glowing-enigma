@@ -58,10 +58,15 @@ get '/work' => sub {
 
 get '/work/:action' => sub {
     my $c = shift;
+    my $action = $c->stash( 'action' );
+
+    if( $action eq 'fetch' ) {
+        #
+    }
 
     $c->render(
         template => 'work',
-        action   => $c->stash( 'action' ),
+        action   => $action,
     );
 };
 
