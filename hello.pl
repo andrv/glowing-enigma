@@ -11,6 +11,7 @@
 
 use Mojolicious::Lite;
 use Mojo::Asset::File;
+use Mojo::UserAgent;
 
 my $config = plugin 'Config';
 
@@ -60,13 +61,29 @@ get '/work/:action' => sub {
     my $c = shift;
     my $action = $c->stash( 'action' );
 
-    if( $action eq 'fetch' ) {
-        #
+    my $gJson;
+
+    if( $action eq 'check' ) {
+        #https://www.googleapis.com/gmail/v1/users/{userName}%40gmail.com/messages?q=from%3Akueche%40kabi-kamenz.de+has%3Aattachment+is%3Aunread&key={YOUR_API_KEY}
+        my $file = Mojo::Asset::File->new( path => $config->{userNameFile} );
+        my $gUserName = $file->slurp;
+        
+        $file = Mojo::Asset::File->new( path => $config->{devApiKey} );
+        my $gApiKey = $file->slurp;
+
+        my $url = 'https://www.googleapis.com/gmail/v1/users/'.
+                  $gUserName.
+                  '@gmail.com/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&key='.
+                  $gApiKey;
+
+        my $ua = Mojo::UserAgent->new;
+        $gJson = $ua->get( $url )->res->json;
     }
 
     $c->render(
-        template => 'work',
+        template => 'workaction',
         action   => $action,
+        gJson    => $gJson,
     );
 };
 

@@ -1,6 +1,9 @@
 % layout 'default', title => 'Processing file';
 <h5>Working on the file</h5>
 <p>
+<ul>
+  <li><%= link_to '/work/check' => begin %>Check for mail<% end %></li>
+</ul>
 <div class="debug">
   %= dumper( 'action' => $action )
 </div>

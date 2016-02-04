@@ -1,0 +1,12 @@
+% layout 'default', title => 'Processing file';
+<h5>Working on the file</h5>
+<p>
+% if( $gJson ) {
+    <div>
+      %= dumper( gJson => $gJson )
+    </div>
+% }
+<div class="debug">
+  %= dumper( action => $action )
+</div>
+</p>
