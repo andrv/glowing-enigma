@@ -8,5 +8,6 @@
     <li>-----</li>
     <li>Google user name: <%= $gUserName %></li>
     <li>Google dev api key: <%= $gApiKey %></li>
+    <li>Google app secrets: <%= $appSecretsJson %></li>
   </ul>
 </p>

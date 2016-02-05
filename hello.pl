@@ -12,6 +12,9 @@
 use Mojolicious::Lite;
 use Mojo::Asset::File;
 use Mojo::UserAgent;
+use Mojo::JSON qw( decode_json encode_json );
+
+use Data::Dumper;
 
 my $config = plugin 'Config';
 
@@ -43,11 +46,14 @@ get '/showConfig' => sub {
     my $gApiKey = $file->slurp;
 
     $file = Mojo::Asset::File->new( path => $config->{appSecrets} );
+    my $appSecretsJson = $file->slurp;
+    print Dumper( decode_json( $appSecretsJson ) );
 
     $c->render(
         template  => 'showConfig',
         gUserName => $gUserName,
         gApiKey   => $gApiKey,
+        appSecretsJson => $appSecretsJson,
     );
 };
 
