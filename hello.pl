@@ -16,6 +16,7 @@ use Mojo::UserAgent;
 my $config = plugin 'Config';
 
 plugin 'TagHelpers';
+plugin 'OAuth2';
 
 get '/' => sub {
     my $c = shift;
@@ -40,6 +41,8 @@ get '/showConfig' => sub {
     
     $file = Mojo::Asset::File->new( path => $config->{devApiKey} );
     my $gApiKey = $file->slurp;
+
+    $file = Mojo::Asset::File->new( path => $config->{appSecrets} );
 
     $c->render(
         template  => 'showConfig',

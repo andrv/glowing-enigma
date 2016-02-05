@@ -4,6 +4,7 @@
   <ul>
     <li>User name location: <%= $config->{userNameFile} %></li>
     <li>Api key location: <%= $config->{devApiKey} %></li>
+    <li>App secrets location: <%= $config->{appSecrets} %></li>
     <li>-----</li>
     <li>Google user name: <%= $gUserName %></li>
     <li>Google dev api key: <%= $gApiKey %></li>
