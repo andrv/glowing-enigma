@@ -19,7 +19,16 @@ use Data::Dumper;
 my $config = plugin 'Config';
 
 plugin 'TagHelpers';
-plugin 'OAuth2';
+
+my $file = Mojo::Asset::File->new( path => $config->{appSecrets} );
+my $appSecrets = decode_json( $file->slurp )->{web};
+
+plugin 'OAuth2' => {
+    google => {
+        key    => $appSecrets->{client_id},
+        secret => $appSecrets->{client_secret},
+    }
+};
 
 get '/' => sub {
     my $c = shift;
@@ -39,21 +48,9 @@ get '/foo' => sub {
 get '/showConfig' => sub {
     my $c = shift;
 
-    my $file = Mojo::Asset::File->new( path => $config->{userNameFile} );
-    my $gUserName = $file->slurp;
-    
-    $file = Mojo::Asset::File->new( path => $config->{devApiKey} );
-    my $gApiKey = $file->slurp;
-
-    $file = Mojo::Asset::File->new( path => $config->{appSecrets} );
-    my $appSecretsJson = $file->slurp;
-    print Dumper( decode_json( $appSecretsJson ) );
-
     $c->render(
-        template  => 'showConfig',
-        gUserName => $gUserName,
-        gApiKey   => $gApiKey,
-        appSecretsJson => $appSecretsJson,
+        template   => 'showConfig',
+        appSecrets => $appSecrets,
     );
 };
 
@@ -73,20 +70,22 @@ get '/work/:action' => sub {
     my $gJson;
 
     if( $action eq 'check' ) {
-        #https://www.googleapis.com/gmail/v1/users/{userName}%40gmail.com/messages?q=from%3Akueche%40kabi-kamenz.de+has%3Aattachment+is%3Aunread&key={YOUR_API_KEY}
-        my $file = Mojo::Asset::File->new( path => $config->{userNameFile} );
-        my $gUserName = $file->slurp;
-        
-        $file = Mojo::Asset::File->new( path => $config->{devApiKey} );
-        my $gApiKey = $file->slurp;
+        my $scope = join ' ', qw' https://mail.google.com/ https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly ';
+        if( my $err = $c->param( 'error' ) ) {
+            print Dumper $err;
+        }
+        elsif( my $data = $c->oauth2->get_token( 'google' => { scope => $scope } ) ) {
 
-        my $url = 'https://www.googleapis.com/gmail/v1/users/'.
-                  $gUserName.
-                  '@gmail.com/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&key='.
-                  $gApiKey;
+            my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
+                      '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&access_token='.
+                      $data->{access_token};
 
-        my $ua = Mojo::UserAgent->new;
-        $gJson = $ua->get( $url )->res->json;
+            my $ua = Mojo::UserAgent->new;
+            $gJson = $ua->get( $url )->res->json;
+        }
+        else {
+            return;
+        }
     }
 
     $c->render(

@@ -2,12 +2,8 @@
 <h5>Configuration:</h5>
 <p>
   <ul>
-    <li>User name location: <%= $config->{userNameFile} %></li>
-    <li>Api key location: <%= $config->{devApiKey} %></li>
     <li>App secrets location: <%= $config->{appSecrets} %></li>
     <li>-----</li>
-    <li>Google user name: <%= $gUserName %></li>
-    <li>Google dev api key: <%= $gApiKey %></li>
-    <li>Google app secrets: <%= $appSecretsJson %></li>
+    <li>Google app secrets: <%= dumper $appSecrets %></li>
   </ul>
 </p>
