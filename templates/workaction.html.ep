@@ -4,6 +4,7 @@
 Found mail with subject: <b><%= $subj %></b>
 % if( $res ) {
     <pre>
+      %= dumper( attachments => $attachments )
       %= dumper( res => $res )
     </pre>
 % }

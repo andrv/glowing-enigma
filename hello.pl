@@ -70,25 +70,42 @@ get '/work/:action' => sub {
     my $res;
 
     if( $action eq 'check' ) {
-        my $scope = join ' ', qw' https://mail.google.com/ https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly ';
+        my @scopes = qw(
+            https://mail.google.com/
+            https://www.googleapis.com/auth/gmail.modify
+            https://www.googleapis.com/auth/gmail.readonly
+        );
+
         if( my $err = $c->param( 'error' ) ) {
             print Dumper $err;
         }
-        elsif( my $data = $c->oauth2->get_token( 'google' => { scope => $scope } ) ) {
+        elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
+            my $accessTokenUrlPart = "access_token=$data->{access_token}";
 
             my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
-                      '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&access_token='.
-                      $data->{access_token};
+                      '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
+                      $accessTokenUrlPart;
 
             my $ua = Mojo::UserAgent->new;
             $res = $ua->get( $url )->res->json;
 
-            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$res->{messages}->[0]->{id}?access_token=$data->{access_token}";
+            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$res->{messages}->[0]->{id}?$accessTokenUrlPart";
             $res = $ua->get( $url )->res->json;
 
             foreach my $header( @{$res->{payload}->{headers}} ) {
                 $c->stash( subj => $header->{value} ) if $header->{name} eq 'Subject';
             }
+
+            my $attachments = [];
+            foreach my $messagePart( @{$res->{payload}->{parts}} ) {
+                push(
+                    @$attachments, {
+                        filename => $messagePart->{filename},
+                        id => $messagePart->{body}->{attachmentId},
+                    }
+                ) if $messagePart->{filename};
+            }
+            $c->stash( attachments => $attachments );
         }
         else {
             return;
