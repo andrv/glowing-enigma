@@ -1,3 +1,3 @@
-GET https://www.googleapis.com/gmail/v1/users/{userName}%40gmail.com/messages?q=from%3Akueche%40kabi-kamenz.de+has%3Aattachment+is%3Aunread&key={YOUR_API_KEY}
+GET https://www.googleapis.com/gmail/v1/users/me/messages?q=from%3Akueche%40kabi-kamenz.de+has%3Aattachment+is%3Aunread&access_token={access_token}
 
-GET https://www.googleapis.com/gmail/v1/users/{userName}%40gmail.com/messages/{messageId}?key={YOUR_API_KEY}
+GET https://www.googleapis.com/gmail/v1/users/me/messages/{messageId}?access_token={access_token}

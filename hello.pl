@@ -67,7 +67,7 @@ get '/work/:action' => sub {
     my $c = shift;
     my $action = $c->stash( 'action' );
 
-    my $gJson;
+    my $res;
 
     if( $action eq 'check' ) {
         my $scope = join ' ', qw' https://mail.google.com/ https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly ';
@@ -81,7 +81,14 @@ get '/work/:action' => sub {
                       $data->{access_token};
 
             my $ua = Mojo::UserAgent->new;
-            $gJson = $ua->get( $url )->res->json;
+            $res = $ua->get( $url )->res->json;
+
+            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$res->{messages}->[0]->{id}?access_token=$data->{access_token}";
+            $res = $ua->get( $url )->res->json;
+
+            foreach my $header( @{$res->{payload}->{headers}} ) {
+                $c->stash( subj => $header->{value} ) if $header->{name} eq 'Subject';
+            }
         }
         else {
             return;
@@ -91,7 +98,7 @@ get '/work/:action' => sub {
     $c->render(
         template => 'workaction',
         action   => $action,
-        gJson    => $gJson,
+        res    => $res,
     );
 };
 
