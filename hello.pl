@@ -89,6 +89,9 @@ get '/work/:action' => sub {
             my $ua = Mojo::UserAgent->new;
             $res = $ua->get( $url )->res->json;
 
+            my $messagesFound = $res->{resultSizeEstimate} ? 1 : 0;
+            $c->stash( messagesFound => $messagesFound );
+
             $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$res->{messages}->[0]->{id}?$accessTokenUrlPart";
             $res = $ua->get( $url )->res->json;
 

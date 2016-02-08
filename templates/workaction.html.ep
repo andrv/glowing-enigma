@@ -1,14 +1,14 @@
 % layout 'default', title => 'Processing file';
 <h5>Working on the file</h5>
-<p>
-Found mail with subject: <b><%= $subj %></b>
-% if( $res ) {
-    <pre>
+    <p>
+      % if( $messagesFound ) {
+      %=    include 'check', subj => $subj, attachments => $attachments;
+      % }
+      <pre>
       %= dumper( attachments => $attachments )
       %= dumper( res => $res )
-    </pre>
-% }
-<div class="debug">
-  %= dumper( action => $action )
-</div>
-</p>
+      </pre>
+      <div class="debug">
+        %= dumper( action => $action )
+      </div>
+    </p>

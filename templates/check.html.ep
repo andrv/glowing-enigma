@@ -1,0 +1,9 @@
+Found mails:
+      <ul>
+        <li><%= $subj %></li>
+        <ul>
+          % foreach my $attachment( @$attachments ) {
+          <li><%= link_to $attachment->{filename} => "/work/fetch/messageId/$attachment->{id}" %></li>
+          % }
+        </ul>
+      </ul>
