@@ -2,11 +2,12 @@
 <h5>Working on the file</h5>
     <p>
       % if( $messagesFound ) {
-      %=    include 'check', subj => $subj, attachments => $attachments;
+      %=    include 'check', messages => $messages;
+      % }
+      % else {
+      Nothing to do
       % }
       <pre>
-      %= dumper( attachments => $attachments )
-      %= dumper( res => $res )
       </pre>
       <div class="debug">
         %= dumper( action => $action )

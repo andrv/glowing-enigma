@@ -92,23 +92,33 @@ get '/work/:action' => sub {
             my $messagesFound = $res->{resultSizeEstimate} ? 1 : 0;
             $c->stash( messagesFound => $messagesFound );
 
-            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$res->{messages}->[0]->{id}?$accessTokenUrlPart";
-            $res = $ua->get( $url )->res->json;
+            my $messageData = [];
 
-            foreach my $header( @{$res->{payload}->{headers}} ) {
-                $c->stash( subj => $header->{value} ) if $header->{name} eq 'Subject';
-            }
+            foreach my $message( @{$res->{messages}} ) {
+                my $metadata = { id => $message->{id} };
 
-            my $attachments = [];
-            foreach my $messagePart( @{$res->{payload}->{parts}} ) {
-                push(
-                    @$attachments, {
-                        filename => $messagePart->{filename},
-                        id => $messagePart->{body}->{attachmentId},
-                    }
-                ) if $messagePart->{filename};
+                $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message->{id}?$accessTokenUrlPart";
+                my $res = $ua->get( $url )->res->json;
+
+                foreach my $header( @{$res->{payload}->{headers}} ) {
+                    $metadata->{subj} = $header->{value} if $header->{name} eq 'Subject';
+                }
+
+                my $attachments = [];
+                foreach my $messagePart( @{$res->{payload}->{parts}} ) {
+                    push(
+                        @$attachments, {
+                            filename => $messagePart->{filename},
+                            id => $messagePart->{body}->{attachmentId},
+                        }
+                    ) if $messagePart->{filename};
+                }
+
+                $metadata->{attachments} = $attachments;
+
+                push @$messageData, $metadata;
             }
-            $c->stash( attachments => $attachments );
+            $c->stash( messages => $messageData );
         }
         else {
             return;
@@ -118,7 +128,6 @@ get '/work/:action' => sub {
     $c->render(
         template => 'workaction',
         action   => $action,
-        res    => $res,
     );
 };
 
