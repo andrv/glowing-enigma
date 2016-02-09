@@ -4,7 +4,12 @@ Found mails:
         <li><%= $message->{subj} %></li>
         <ul>
           % foreach my $attachment( @{$message->{attachments}} ) {
+          %     if( $attachment->{filename} =~ m/pdf$/ ) {
           <li><%= link_to $attachment->{filename} => "/work/fetch/$message->{id}/$attachment->{id}" %></li>
+          %     }
+          %     else {
+          <li><%= $attachment->{filename} %></li>
+          %     }
           % }
         </ul>
         % }
