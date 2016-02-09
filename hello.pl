@@ -63,71 +63,77 @@ get '/work' => sub {
     );
 };
 
-get '/work/:action' => sub {
+get '/work/check' => sub {
     my $c = shift;
-    my $action = $c->stash( 'action' );
+
+    my @scopes = qw(
+        https://mail.google.com/
+        https://www.googleapis.com/auth/gmail.modify
+        https://www.googleapis.com/auth/gmail.readonly
+    );
 
     my $res;
 
-    if( $action eq 'check' ) {
-        my @scopes = qw(
-            https://mail.google.com/
-            https://www.googleapis.com/auth/gmail.modify
-            https://www.googleapis.com/auth/gmail.readonly
-        );
+    if( my $err = $c->param( 'error' ) ) {
+        print Dumper $err;
+    }
+    elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
+        my $accessTokenUrlPart = "access_token=$data->{access_token}";
 
-        if( my $err = $c->param( 'error' ) ) {
-            print Dumper $err;
-        }
-        elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
-            my $accessTokenUrlPart = "access_token=$data->{access_token}";
+        my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
+                  '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
+                  $accessTokenUrlPart;
 
-            my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
-                      '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
-                      $accessTokenUrlPart;
+        my $ua = Mojo::UserAgent->new;
+        $res = $ua->get( $url )->res->json;
 
-            my $ua = Mojo::UserAgent->new;
-            $res = $ua->get( $url )->res->json;
+        my $messagesFound = $res->{resultSizeEstimate} ? 1 : 0;
+        $c->stash( messagesFound => $messagesFound );
 
-            my $messagesFound = $res->{resultSizeEstimate} ? 1 : 0;
-            $c->stash( messagesFound => $messagesFound );
+        my $messageData = [];
 
-            my $messageData = [];
+        foreach my $message( @{$res->{messages}} ) {
+            my $metadata = { id => $message->{id} };
 
-            foreach my $message( @{$res->{messages}} ) {
-                my $metadata = { id => $message->{id} };
+            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message->{id}?$accessTokenUrlPart";
+            my $res = $ua->get( $url )->res->json;
 
-                $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message->{id}?$accessTokenUrlPart";
-                my $res = $ua->get( $url )->res->json;
-
-                foreach my $header( @{$res->{payload}->{headers}} ) {
-                    $metadata->{subj} = $header->{value} if $header->{name} eq 'Subject';
-                }
-
-                my $attachments = [];
-                foreach my $messagePart( @{$res->{payload}->{parts}} ) {
-                    push(
-                        @$attachments, {
-                            filename => $messagePart->{filename},
-                            id => $messagePart->{body}->{attachmentId},
-                        }
-                    ) if $messagePart->{filename};
-                }
-
-                $metadata->{attachments} = $attachments;
-
-                push @$messageData, $metadata;
+            foreach my $header( @{$res->{payload}->{headers}} ) {
+                $metadata->{subj} = $header->{value} if $header->{name} eq 'Subject';
             }
-            $c->stash( messages => $messageData );
+
+            my $attachments = [];
+            foreach my $messagePart( @{$res->{payload}->{parts}} ) {
+                push(
+                    @$attachments, {
+                        filename => $messagePart->{filename},
+                        id => $messagePart->{body}->{attachmentId},
+                    }
+                ) if $messagePart->{filename};
+            }
+
+            $metadata->{attachments} = $attachments;
+
+            push @$messageData, $metadata;
         }
-        else {
-            return;
-        }
+        $c->stash( messages => $messageData );
+    }
+    else {
+        return;
     }
 
     $c->render(
-        template => 'workaction',
-        action   => $action,
+        template => 'checking',
+    );
+};
+
+get '/work/fetch/:messageId/:attachmentId' => sub {
+    my $c            = shift;
+    my $messageId    = $c->stash('messageId');
+    my $attachmentId = $c->stash('attachmentId');
+
+    $c->render(
+        template => 'fetching',
     );
 };
 
