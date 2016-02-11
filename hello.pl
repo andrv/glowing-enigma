@@ -30,6 +30,12 @@ plugin 'OAuth2' => {
     }
 };
 
+my @scopes = qw(
+    https://mail.google.com/
+    https://www.googleapis.com/auth/gmail.modify
+    https://www.googleapis.com/auth/gmail.readonly
+);
+
 get '/' => sub {
     my $c = shift;
     $c->render( template => 'index' );
@@ -65,12 +71,6 @@ get '/work' => sub {
 
 get '/work/check' => sub {
     my $c = shift;
-
-    my @scopes = qw(
-        https://mail.google.com/
-        https://www.googleapis.com/auth/gmail.modify
-        https://www.googleapis.com/auth/gmail.readonly
-    );
 
     my $res;
 
@@ -127,10 +127,39 @@ get '/work/check' => sub {
     );
 };
 
-get '/work/fetch/:messageId/:attachmentId' => sub {
+get '/work/fetch' => sub {
     my $c            = shift;
-    my $messageId    = $c->stash('messageId');
-    my $attachmentId = $c->stash('attachmentId');
+    my $messageId    = $c->param( 'mess' );
+    my $attachmentId = $c->param( 'attach' );
+
+    my $file = Mojo::Asset::File->new;
+    $file->add_chunk( 'some data' );
+    $file->move_to( '/home/b01125/speiseplan/glowing-enigma/some.data' );
+
+    my $res;
+
+    if( my $err = $c->param( 'error' ) ) {
+        print Dumper $err;
+    }
+    elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
+        my $accessTokenUrlPart = "access_token=$data->{access_token}";
+
+        my $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$messageId/attachments/$attachmentId?$accessTokenUrlPart";
+
+#        my $ua = Mojo::UserAgent->new;
+#        $res = $ua->get( $url )->res->json;
+
+        my $file = Mojo::Asset::File->new;
+        $file->add_chunk( 'some data' );
+#            {
+#                "attachmentId": string,
+#                "size": integer,
+#                "data": bytes
+#            }
+    }
+    else {
+        return;
+    }
 
     $c->render(
         template => 'fetching',
