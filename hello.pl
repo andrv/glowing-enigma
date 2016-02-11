@@ -134,7 +134,7 @@ get '/work/fetch' => sub {
 
     my $file = Mojo::Asset::File->new;
     $file->add_chunk( 'some data' );
-    $file->move_to( '/home/b01125/speiseplan/glowing-enigma/some.data' );
+    $file->move_to( 'some.data' );
 
     my $res;
 
