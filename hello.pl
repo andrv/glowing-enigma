@@ -13,7 +13,8 @@ use Mojolicious::Lite;
 use Mojo::Asset::File;
 use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
-use Mojo::ByteStream 'b';
+use Mojo::Util qw(spurt encode);
+use MIME::Base64::URLSafe;
 
 use Data::Dumper;
 
@@ -84,6 +85,7 @@ get '/work/check' => sub {
         $localStore->{accessTokenUrlPart} = "access_token=$data->{access_token}";
 
         my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
+#                  '/messages?q=has:attachment is:unread&'.
                   '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
                   $localStore->{accessTokenUrlPart};
 
@@ -141,21 +143,14 @@ get '/work/fetch/:message/:attachment/#name' => sub {
     my $ua = Mojo::UserAgent->new;
     my $res = $ua->get( $url )->res->json;
 
-    my $stream = b( $res->{data} );
-    $stream->b64_decode->spurt( $name );
+    my $bytes = encode 'UTF-8', $res->{data};
+    $bytes = urlsafe_b64decode $bytes;
 
-#    my $file = Mojo::Asset::File->new;
-#    $file->add_chunk( $res->{data} );
-#    $file->move_to( $name );
-
-##            {
-##                "attachmentId": string,
-##                "size": integer,
-##                "data": bytes
-##            }
+    spurt $bytes, $name;
 
     $c->render(
         template => 'fetching',
+        name     => $name,
     );
 };
 
