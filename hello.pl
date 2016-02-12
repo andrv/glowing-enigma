@@ -13,6 +13,7 @@ use Mojolicious::Lite;
 use Mojo::Asset::File;
 use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
+use Mojo::ByteStream 'b';
 
 use Data::Dumper;
 
@@ -35,6 +36,8 @@ my @scopes = qw(
     https://www.googleapis.com/auth/gmail.modify
     https://www.googleapis.com/auth/gmail.readonly
 );
+
+my $localStore = {};
 
 get '/' => sub {
     my $c = shift;
@@ -78,11 +81,11 @@ get '/work/check' => sub {
         print Dumper $err;
     }
     elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
-        my $accessTokenUrlPart = "access_token=$data->{access_token}";
+        $localStore->{accessTokenUrlPart} = "access_token=$data->{access_token}";
 
         my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
                   '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
-                  $accessTokenUrlPart;
+                  $localStore->{accessTokenUrlPart};
 
         my $ua = Mojo::UserAgent->new;
         $res = $ua->get( $url )->res->json;
@@ -95,7 +98,7 @@ get '/work/check' => sub {
         foreach my $message( @{$res->{messages}} ) {
             my $metadata = { id => $message->{id} };
 
-            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message->{id}?$accessTokenUrlPart";
+            $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message->{id}?$localStore->{accessTokenUrlPart}";
             my $res = $ua->get( $url )->res->json;
 
             foreach my $header( @{$res->{payload}->{headers}} ) {
@@ -127,39 +130,29 @@ get '/work/check' => sub {
     );
 };
 
-get '/work/fetch' => sub {
-    my $c            = shift;
-    my $messageId    = $c->param( 'mess' );
-    my $attachmentId = $c->param( 'attach' );
+get '/work/fetch/:message/:attachment/#name' => sub {
+    my $c          = shift;
+    my $message    = $c->stash( 'message' );
+    my $attachment = $c->stash( 'attachment' );
+    my $name       = $c->stash( 'name' );
 
-    my $file = Mojo::Asset::File->new;
-    $file->add_chunk( 'some data' );
-    $file->move_to( 'some.data' );
+    my $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message/attachments/$attachment?$localStore->{accessTokenUrlPart}";
 
-    my $res;
+    my $ua = Mojo::UserAgent->new;
+    my $res = $ua->get( $url )->res->json;
 
-    if( my $err = $c->param( 'error' ) ) {
-        print Dumper $err;
-    }
-    elsif( my $data = $c->oauth2->get_token( 'google' => { scope => join ' ', @scopes } ) ) {
-        my $accessTokenUrlPart = "access_token=$data->{access_token}";
+    my $stream = b( $res->{data} );
+    $stream->b64_decode->spurt( $name );
 
-        my $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$messageId/attachments/$attachmentId?$accessTokenUrlPart";
+#    my $file = Mojo::Asset::File->new;
+#    $file->add_chunk( $res->{data} );
+#    $file->move_to( $name );
 
-#        my $ua = Mojo::UserAgent->new;
-#        $res = $ua->get( $url )->res->json;
-
-        my $file = Mojo::Asset::File->new;
-        $file->add_chunk( 'some data' );
-#            {
-#                "attachmentId": string,
-#                "size": integer,
-#                "data": bytes
-#            }
-    }
-    else {
-        return;
-    }
+##            {
+##                "attachmentId": string,
+##                "size": integer,
+##                "data": bytes
+##            }
 
     $c->render(
         template => 'fetching',
