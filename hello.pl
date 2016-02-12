@@ -15,6 +15,7 @@ use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw(spurt encode);
 use MIME::Base64::URLSafe;
+use File::Spec;
 
 use Data::Dumper;
 
@@ -136,7 +137,6 @@ get '/work/fetch/:message/:attachment/#name' => sub {
     my $c          = shift;
     my $message    = $c->stash( 'message' );
     my $attachment = $c->stash( 'attachment' );
-    my $name       = $c->stash( 'name' );
 
     my $url = "https://www.googleapis.com/gmail/v1/users/me/messages/$message/attachments/$attachment?$localStore->{accessTokenUrlPart}";
 
@@ -146,11 +146,13 @@ get '/work/fetch/:message/:attachment/#name' => sub {
     my $bytes = encode 'UTF-8', $res->{data};
     $bytes = urlsafe_b64decode $bytes;
 
-    spurt $bytes, $name;
+    my $path = File::Spec->catfile( $config->{sorceFiles}, $c->stash( 'name' ) );
+
+    spurt $bytes, $path;
 
     $c->render(
-        template => 'fetching',
-        name     => $name,
+        template => 'fetched',
+        name     => $path,
     );
 };
 
