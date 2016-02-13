@@ -1,3 +1,4 @@
+% use Mojo::Util qw( decode );
 % layout 'default', title => 'Processing file';
 <h5>Working on the file</h5>
 <p>
@@ -9,7 +10,7 @@ Check for
   or process local files:
   <ul>
   %     foreach my $filename( @$foundLocalFiles ) {
-    <li><%= link_to $filename => "/work/parse/$filename" %></li>
+    <li><%= link_to decode( 'UTF-8', $filename ) => "/work/parse/$filename" %></li>
   %     }
   % }
   </ul>
