@@ -46,16 +46,6 @@ get '/' => sub {
     $c->render( template => 'index' );
 };
 
-get '/foo' => sub {
-    my $c = shift;
-    my $user = $c->param( 'user' ) || '';
-
-    $c->render(
-        template => 'index',
-        moreContent => "Hello foo '$user' sombody!\nBye.\n",
-    );
-};
-
 get '/showConfig' => sub {
     my $c = shift;
 
@@ -65,7 +55,9 @@ get '/showConfig' => sub {
     );
 };
 
-get '/work' => sub {
+under '/work';
+
+get '/' => sub {
     my $c = shift;
     my $foundLocalFiles = checkLocalFiles();
 
@@ -76,7 +68,7 @@ get '/work' => sub {
     );
 };
 
-get '/work/check' => sub {
+get '/check' => sub {
     my $c = shift;
 
     my $res;
@@ -135,7 +127,7 @@ get '/work/check' => sub {
     );
 };
 
-get '/work/fetch/:message/:attachment/#name' => sub {
+get '/fetch/:message/:attachment/#name' => sub {
     my $c          = shift;
     my $message    = $c->stash( 'message' );
     my $attachment = $c->stash( 'attachment' );
