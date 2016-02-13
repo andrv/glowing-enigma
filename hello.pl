@@ -13,7 +13,7 @@ use Mojolicious::Lite;
 use Mojo::Asset::File;
 use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
-use Mojo::Util qw(spurt encode);
+use Mojo::Util qw( spurt encode );
 use MIME::Base64::URLSafe;
 use File::Spec;
 
@@ -67,10 +67,12 @@ get '/showConfig' => sub {
 
 get '/work' => sub {
     my $c = shift;
+    my $foundLocalFiles = checkLocalFiles();
 
     $c->render(
-        template => 'work',
-        action   => '',
+        template        => 'work',
+        action          => '',
+        foundLocalFiles => $foundLocalFiles,
     );
 };
 
@@ -146,7 +148,7 @@ get '/work/fetch/:message/:attachment/#name' => sub {
     my $bytes = encode 'UTF-8', $res->{data};
     $bytes = urlsafe_b64decode $bytes;
 
-    my $path = File::Spec->catfile( $config->{sorceFiles}, $c->stash( 'name' ) );
+    my $path = File::Spec->catfile( $config->{sourceFiles}, $c->stash( 'name' ) );
 
     spurt $bytes, $path;
 
@@ -155,5 +157,22 @@ get '/work/fetch/:message/:attachment/#name' => sub {
         name     => $path,
     );
 };
+
+sub checkLocalFiles {
+    my $files = [];
+    my $dir   = $config->{sourceFiles};
+
+    opendir( my $dh, $dir ) or die "can't opendir $dir $!";
+
+    while( my $file = readdir $dh ) {
+        next unless -f File::Spec->catfile( $dir, $file );
+#        next unless $file =~ m/\.\w+$/;
+        push @$files, $file;
+    }
+
+    closedir $dh;
+
+    return $files;
+}
 
 app->start;

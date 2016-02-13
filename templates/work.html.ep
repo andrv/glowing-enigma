@@ -1,10 +1,20 @@
 % layout 'default', title => 'Processing file';
 <h5>Working on the file</h5>
 <p>
-<ul>
-  <li><%= link_to '/work/check' => begin %>Check for mail<% end %></li>
-</ul>
-<div class="debug">
-  %= dumper( 'action' => $action )
-</div>
+Check for
+  <ul>
+    <li><%= link_to 'mail' => '/work/check' %></li>
+  </ul>
+  % if( @$foundLocalFiles ) {
+  or process local files:
+  <ul>
+  %     foreach my $filename( @$foundLocalFiles ) {
+    <li><%= link_to $filename => "/work/parse/$filename" %></li>
+  %     }
+  % }
+  </ul>
+  <pre class="debug">
+    %= dumper( action => $action )
+    %= dumper( foundLocalFiles => $foundLocalFiles )
+  </pre>
 </p>
