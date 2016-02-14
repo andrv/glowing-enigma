@@ -55,9 +55,7 @@ get '/showConfig' => sub {
     );
 };
 
-under '/work';
-
-get '/' => sub {
+get '/work' => sub {
     my $c = shift;
     my $foundLocalFiles = checkLocalFiles();
 
@@ -65,10 +63,11 @@ get '/' => sub {
         template        => 'work',
         action          => '',
         foundLocalFiles => $foundLocalFiles,
+        fetched         => 0,
     );
 };
 
-get '/check' => sub {
+get '/work/check' => sub {
     my $c = shift;
 
     my $res;
@@ -127,7 +126,7 @@ get '/check' => sub {
     );
 };
 
-get '/fetch/:message/:attachment/#name' => sub {
+get '/work/fetch/:message/:attachment/#name' => sub {
     my $c          = shift;
     my $message    = $c->stash( 'message' );
     my $attachment = $c->stash( 'attachment' );
@@ -144,10 +143,8 @@ get '/fetch/:message/:attachment/#name' => sub {
 
     spurt $bytes, $path;
 
-    $c->render(
-        template => 'fetched',
-        name     => $path,
-    );
+    $c->stash( fetched => 1 );
+    $c->redirect_to( '/work' );
 };
 
 sub checkLocalFiles {
