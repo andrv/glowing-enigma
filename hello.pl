@@ -145,6 +145,12 @@ get '/fetch/:message/:attachment/#name' => sub {
     $c->redirect_to( '/list' );
 };
 
+get '/parse/#name' => sub {
+    my $c = shift;
+
+    $c->render( inline => 'Trying parse pdf file...' );
+};
+
 sub checkLocalFiles {
     my $files = [];
     my $dir   = $config->{sourceFiles};
