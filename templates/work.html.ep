@@ -4,13 +4,13 @@
 <p>
 Check for
   <ul>
-    <li><%= link_to 'mail' => '/work/check' %></li>
+    <li><%= link_to 'mail' => '/check' %></li>
   </ul>
   % if( @$foundLocalFiles ) {
   or process local files:
   <ul>
   %     foreach my $filename( @$foundLocalFiles ) {
-    <li><%= link_to decode( 'UTF-8', $filename ) => "/work/parse/$filename" %></li>
+    <li><%= link_to decode( 'UTF-8', $filename ) => "/parse/$filename" %></li>
   %     }
   % }
   </ul>
