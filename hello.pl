@@ -16,6 +16,7 @@ use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw( spurt encode );
 use MIME::Base64::URLSafe;
 use File::Spec;
+use PDF::API2;
 
 use Data::Dumper;
 
@@ -65,6 +66,23 @@ get '/list' => sub {
         foundLocalFiles => $foundLocalFiles,
     );
 };
+
+sub checkLocalFiles {
+    my $files = [];
+    my $dir   = $config->{sourceFiles};
+
+    opendir( my $dh, $dir ) or die "can't opendir $dir $!";
+
+    while( my $file = readdir $dh ) {
+        next unless -f File::Spec->catfile( $dir, $file );
+#        next unless $file =~ m/\.\w+$/;
+        push @$files, $file;
+    }
+
+    closedir $dh;
+
+    return $files;
+}
 
 get '/check' => sub {
     my $c = shift;
@@ -146,26 +164,18 @@ get '/fetch/:message/:attachment/#name' => sub {
 };
 
 get '/parse/#name' => sub {
-    my $c = shift;
+    my $c    = shift;
+    my $name = $c->stash( 'name' );
 
-    $c->render( inline => 'Trying parse pdf file...' );
+    my $path = File::Spec->catfile( $config->{sourceFiles}, $name );
+    my $old  = PDF::API2->open( $path );
+    my $out = Dumper $old;
+#    my $xmlMetadata = $old->xmpMetadata;
+
+    $old->end;
+#    $c->render( inline => "Trying parse pdf file: $name" );
+    $c->render( inline => "Trying parse pdf file: $name\nout:\n$out" );
+#    $c->render( inline => "Trying parse pdf file: $name\nmetadata:\n$xmlMetadata" );
 };
-
-sub checkLocalFiles {
-    my $files = [];
-    my $dir   = $config->{sourceFiles};
-
-    opendir( my $dh, $dir ) or die "can't opendir $dir $!";
-
-    while( my $file = readdir $dh ) {
-        next unless -f File::Spec->catfile( $dir, $file );
-#        next unless $file =~ m/\.\w+$/;
-        push @$files, $file;
-    }
-
-    closedir $dh;
-
-    return $files;
-}
 
 app->start;
