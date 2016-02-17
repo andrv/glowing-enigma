@@ -16,7 +16,6 @@ use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw( spurt encode );
 use MIME::Base64::URLSafe;
 use File::Spec;
-use PDF::OCR2;
 
 use Data::Dumper;
 
@@ -78,7 +77,7 @@ sub checkLocalFiles {
 
     while( my $file = readdir $dh ) {
         next unless -f File::Spec->catfile( $dir, $file );
-#        next unless $file =~ m/\.\w+$/;
+        next unless $file =~ m/\.\w+$/;
         push @$files, $file;
     }
 
@@ -169,10 +168,7 @@ get '/parse/#name' => sub {
     my $c    = shift;
     my $name = $c->stash( 'name' );
 
-    my $t    = `java -jar ../../Downloads/tika-app-1.12.jar -t sources/p.pdf`;
-    print Dumper $t;
-
-    $c->render( inline => "Trying parse pdf file: $name\n text:\n $t" );
+    $c->render( inline => "Trying parse file: $name\n" );
 };
 
 app->start;
