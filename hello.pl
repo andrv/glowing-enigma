@@ -16,8 +16,7 @@ use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw( spurt encode );
 use MIME::Base64::URLSafe;
 use File::Spec;
-use CAM::PDF;
-use CAM::PDF::PageText;
+use PDF::OCR2;
 
 use Data::Dumper;
 
@@ -169,12 +168,10 @@ get '/parse/#name' => sub {
     my $name = $c->stash( 'name' );
 
     my $path = File::Spec->catfile( $config->{sourceFiles}, $name );
-    my $old  = CAM::PDF->new( $path ) or die "$CAM::PDF::errstr\n";
-    my $pTree = $old->getPageContentTree( 1 );
-#    my $co   = $old->getPageContent( 1 );
-    print CAM::PDF::PageText->render( $pTree );
+    my $p    = PDF::OCR2->new( $path );
+    my $t    = $p->text;
 
-    $c->render( inline => "Trying parse pdf file: $name" );
+    $c->render( inline => "Trying parse pdf file: $name\n text:\n $t" );
 };
 
 app->start;
