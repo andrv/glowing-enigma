@@ -167,9 +167,8 @@ get '/parse/#name' => sub {
     my $c    = shift;
     my $name = $c->stash( 'name' );
 
-    my $path = File::Spec->catfile( $config->{sourceFiles}, $name );
-    my $p    = PDF::OCR2->new( $path );
-    my $t    = $p->text;
+    my $t    = `java -jar ../../Downloads/tika-app-1.12.jar -t sources/p.pdf`;
+    print Dumper $t;
 
     $c->render( inline => "Trying parse pdf file: $name\n text:\n $t" );
 };
