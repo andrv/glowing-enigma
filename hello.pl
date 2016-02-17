@@ -27,6 +27,9 @@ plugin 'TagHelpers';
 my $file = Mojo::Asset::File->new( path => $config->{appSecrets} );
 my $appSecrets = decode_json( $file->slurp )->{web};
 
+$file = Mojo::Asset::File->new( path => File::Spec->catfile( $config->{searchDir}, $config->{search} ) );
+my $search = $file->slurp;
+
 plugin 'OAuth2' => {
     google => {
         key    => $appSecrets->{client_id},
@@ -96,8 +99,7 @@ get '/check' => sub {
         $localStore->{accessTokenUrlPart} = "access_token=$data->{access_token}";
 
         my $url = 'https://www.googleapis.com/gmail/v1/users/me'.
-#                  '/messages?q=has:attachment is:unread&'.
-                  '/messages?q=from:kueche@kabi-kamenz.de has:attachment is:unread&'.
+                  "/messages?q=$search&".
                   $localStore->{accessTokenUrlPart};
 
         my $ua = Mojo::UserAgent->new;
