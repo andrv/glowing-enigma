@@ -167,6 +167,10 @@ get '/fetch/:message/:attachment/#name' => sub {
 get '/parse/#name' => sub {
     my $c    = shift;
     my $name = $c->stash( 'name' );
+    my $sourcePath = File::Spec->catfile( $config->{sourceFiles}, $name );
+    my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $config->{targetFiles} '$sourcePath');
+    print Dumper $converter;
+    system $converter;
 
     $c->render( inline => "Trying parse file: $name\n" );
 };

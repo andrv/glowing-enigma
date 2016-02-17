@@ -24,3 +24,4 @@ credentials/*.json
 *.pdf
 saved/search*
 *.doc
+targets/*.html
