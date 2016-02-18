@@ -15,6 +15,7 @@ use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw( spurt encode );
 use MIME::Base64::URLSafe;
+use Mojo::DOM;
 use File::Spec;
 
 use Data::Dumper;
@@ -167,10 +168,18 @@ get '/fetch/:message/:attachment/#name' => sub {
 get '/parse/#name' => sub {
     my $c    = shift;
     my $name = $c->stash( 'name' );
+
     my $sourcePath = File::Spec->catfile( $config->{sourceFiles}, $name );
     my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $config->{targetFiles} '$sourcePath');
-    print Dumper $converter;
     system $converter;
+
+    $name =~ s/doc/html/;
+    my $targetPath = File::Spec->catfile( $config->{targetFiles}, $name );
+    my $file = Mojo::Asset::File->new( path => encode( 'UTF-8', $targetPath ) );
+
+    my $dom = Mojo::DOM->new( $file->slurp );
+
+    say $dom->at( 'title' )->all_text;
 
     $c->render( inline => "Trying parse file: $name\n" );
 };
