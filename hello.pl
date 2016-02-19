@@ -71,18 +71,19 @@ get '/list' => sub {
 };
 
 sub checkLocalFiles {
-    my $files = [];
-    my $dir   = $config->{sourceFiles};
+    my $files = {};
 
-    opendir( my $dh, $dir ) or die "can't opendir $dir $!";
+    foreach my $dir( $config->{sourceFiles}, $config->{targetFiles} ) {
+        opendir( my $dh, $dir ) or die "can't opendir $dir $!";
 
-    while( my $file = readdir $dh ) {
-        next unless -f File::Spec->catfile( $dir, $file );
-        next unless $file =~ m/\.\w+$/;
-        push @$files, $file;
+        while( my $file = readdir $dh ) {
+            next unless -f File::Spec->catfile( $dir, $file );
+            next unless $file =~ m/\.\w+$/;
+            push @{$files->{$dir}}, $file;
+        }
+
+        closedir $dh;
     }
-
-    closedir $dh;
 
     return $files;
 }

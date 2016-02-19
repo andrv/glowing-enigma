@@ -6,14 +6,14 @@ Check for
   <ul>
     <li><%= link_to 'mail' => '/check' %></li>
   </ul>
-  % if( @$foundLocalFiles ) {
-  or process local files:
-  <ul>
-  %     foreach my $filename( @$foundLocalFiles ) {
-    <li><%= link_to decode( 'UTF-8', $filename ) => "/parse/$filename" %></li>
-  %     }
+  % if( %$foundLocalFiles ) {
+%#  or process local files:
+%#  <ul>
+%#  %     foreach my $filename( @$foundLocalFiles ) {
+%#    <li><%= link_to decode( 'UTF-8', $filename ) => "/parse/$filename" %></li>
+%#  %     }
+%#  </ul>
   % }
-  </ul>
   <pre class="debug">
     %= dumper( action => $action )
     %= dumper( foundLocalFiles => $foundLocalFiles )
