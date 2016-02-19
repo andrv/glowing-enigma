@@ -64,7 +64,7 @@ get '/list' => sub {
     my $foundLocalFiles = checkLocalFiles();
 
     $c->render(
-        template        => 'work',
+        template        => 'list',
         action          => '',
         foundLocalFiles => $foundLocalFiles,
     );
