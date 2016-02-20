@@ -23,16 +23,26 @@ sub html {
     <title>$title</title>
   </head>
   <body>
-    <dif name="nav">
-      <ul>
+    @{[ $self->div( name => 'nav', qq(<ul>
         <li><a href="/">Home</a></li>
         <li><a href="/list">Working on the file</a></li>
         <li><a href="/showConfig">Show configuration</a></li>
-      </ul>
-    </div>
+      </ul>) ) ]}
     $content
   </body>
 </html>)
+}
+
+sub div {
+    my $self    = shift;
+    my $content = pop;
+    my %attr    = @_;
+
+    my $name = $attr{name} ? qq( name="$attr{name}") : '';
+
+    return qq(<div$name>
+      $content
+    </div>)
 }
 
 1;
