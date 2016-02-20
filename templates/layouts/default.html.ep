@@ -8,15 +8,9 @@
       %= dumper( 'current route:' => current_route )
     </div>
     <ul>
-      % unless( current_route '' ) {
       <li><%= link_to '/' => begin %>Home<% end %></li>
-      % }
-      % unless( current_route =~ m/list/ ) {
       <li><%= link_to '/list' => begin %>Working on the file<% end %></li>
-      % }
-      % unless( current_route 'showConfig' ) {
       <li><%= link_to '/showConfig' => begin %>Show configuration<% end %></li>
-      % }
     </ul>
     <%= content %>
   </body>

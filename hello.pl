@@ -18,6 +18,9 @@ use MIME::Base64::URLSafe;
 use Mojo::DOM;
 use File::Spec;
 
+use lib 'lib';
+use Html;
+
 use Data::Dumper;
 
 my $config = plugin 'Config';
@@ -47,7 +50,9 @@ my $localStore = {};
 
 get '/' => sub {
     my $c = shift;
-    $c->render( template => 'index' );
+    my $h = Html->new;
+
+    $c->render( data => $h->html( 'The beginn..' ) );
 };
 
 get '/showConfig' => sub {
