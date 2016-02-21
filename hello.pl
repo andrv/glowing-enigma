@@ -73,9 +73,14 @@ get '/' => sub {
 get '/showConfig' => sub {
     my $c = shift;
 
-    $c->render(
-        template   => 'showConfig',
-        appSecrets => $appSecrets,
+    $c->render( data => $h->html( 'Show configuration', out(
+                $h->h5( 'Configuration:' ).
+                $h->ul([
+                        "App secrets location: $config->{appSecrets}",
+                        '-----',
+                        "Google app secrets: ". Dumper( $appSecrets ),
+                ])
+            ))
     );
 };
 

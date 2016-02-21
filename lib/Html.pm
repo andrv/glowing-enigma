@@ -62,4 +62,11 @@ sub link {
     return "<a$href>$content</a>"
 }
 
+sub h5 {
+    my $self    = shift;
+    my $content = pop;
+
+    return "<h5>$content</h5>\n"
+}
+
 1;

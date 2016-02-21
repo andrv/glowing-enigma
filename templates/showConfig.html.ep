@@ -1,9 +1,0 @@
-% layout 'default', title => 'Show configuration';
-<h5>Configuration:</h5>
-<p>
-  <ul>
-    <li>App secrets location: <%= $config->{appSecrets} %></li>
-    <li>-----</li>
-    <li>Google app secrets: <%= dumper $appSecrets %></li>
-  </ul>
-</p>
