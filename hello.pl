@@ -48,11 +48,26 @@ my @scopes = qw(
 
 my $localStore = {};
 
+my $h = Html->new;
+
+my $nav = $h->div( name => 'nav',
+    $h->ul([
+            $h->link( to => '/',           'Home' ),
+            $h->link( to => '/list',       'Working on the file' ),
+            $h->link( to => '/showConfig', 'Show configuration' ),
+    ])
+);
+
+sub out {
+    my $content = shift || '';
+    return $nav. $content;
+}
+
 get '/' => sub {
     my $c = shift;
     my $h = Html->new;
 
-    $c->render( data => $h->html( 'The beginn..' ) );
+    $c->render( data => $h->html( 'The beginn..', out() ) );
 };
 
 get '/showConfig' => sub {

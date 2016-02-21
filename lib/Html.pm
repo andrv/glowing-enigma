@@ -23,11 +23,6 @@ sub html {
     <title>$title</title>
   </head>
   <body>
-    @{[ $self->div( name => 'nav', qq(<ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/list">Working on the file</a></li>
-        <li><a href="/showConfig">Show configuration</a></li>
-      </ul>) ) ]}
     $content
   </body>
 </html>)
@@ -43,6 +38,28 @@ sub div {
     return qq(<div$name>
       $content
     </div>)
+}
+
+sub ul {
+    my $self    = shift;
+    my $content = pop;
+    my %attr    = @_;
+
+    my $ul = join "</li>\n<li>", @$content;
+
+    return qq(<ul>
+      <li>$ul</li>
+    </ul>)
+}
+
+sub link {
+    my $self    = shift,
+    my $content = pop,
+    my %attr    = @_;
+
+    my $href = $attr{to} ? qq( href="$attr{to}") : '';
+
+    return "<a$href>$content</a>"
 }
 
 1;
