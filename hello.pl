@@ -119,7 +119,7 @@ get '/list' => sub {
 sub checkLocalFiles {
     my $files = {};
 
-    foreach my $dir( $config->{sourceFiles}, $config->{targetFiles} ) {
+    foreach my $dir( $config->{sourceDir}, $config->{converted} ) {
         opendir( my $dh, $dir ) or die "can't opendir $dir $!";
 
         while( my $file = readdir $dh ) {
@@ -205,23 +205,23 @@ get '/fetch/:message/:attachment/#name' => sub {
     my $bytes = encode 'UTF-8', $res->{data};
     $bytes = urlsafe_b64decode $bytes;
 
-    my $path = File::Spec->catfile( $config->{sourceFiles}, $c->stash( 'name' ) );
+    my $path = File::Spec->catfile( $config->{sourceDir}, $c->stash( 'name' ) );
 
     spurt $bytes, $path;
 
     $c->redirect_to( '/list' );
 };
 
-get '/parse/#name' => sub {
+get '/convert/#name' => sub {
     my $c    = shift;
     my $name = $c->stash( 'name' );
 
-    my $sourcePath = File::Spec->catfile( $config->{sourceFiles}, $name );
-    my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $config->{targetFiles} '$sourcePath');
+    my $sourcePath = File::Spec->catfile( $config->{sourceDir}, $name );
+    my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $config->{converted} '$sourcePath');
     system $converter;
 
     $name =~ s/doc/html/;
-    my $targetPath = File::Spec->catfile( $config->{targetFiles}, $name );
+    my $targetPath = File::Spec->catfile( $config->{converted}, $name );
     my $file = Mojo::Asset::File->new( path => encode( 'UTF-8', $targetPath ) );
 
     my $dom = Mojo::DOM->new( $file->slurp );
