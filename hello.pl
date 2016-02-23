@@ -143,6 +143,8 @@ get '/check' => sub {
 
     my $res;
 
+    my $messageData = [];
+
     if( my $err = $c->param( 'error' ) ) {
         print Dumper $err;
     }
@@ -156,11 +158,6 @@ get '/check' => sub {
         my $ua = Mojo::UserAgent->new;
         $res = $ua->get( $url )->res->json;
 
-        my $messagesFound = $res->{resultSizeEstimate} ? 1 : 0;
-        $c->stash( messagesFound => $messagesFound );
-
-        my $messageData = [];
-
         foreach my $message( @{$res->{messages}} ) {
             my $metadata = { id => $message->{id} };
 
@@ -168,31 +165,42 @@ get '/check' => sub {
             my $res = $ua->get( $url )->res->json;
 
             foreach my $header( @{$res->{payload}->{headers}} ) {
-                $metadata->{subj} = $header->{value} if $header->{name} eq 'Subject';
+                $metadata->{subj} = encode( 'UTF-8', $header->{value} ) if $header->{name} eq 'Subject';
             }
 
-            my $attachments = [];
+            my @attachments;
             foreach my $messagePart( @{$res->{payload}->{parts}} ) {
-                push(
-                    @$attachments, {
-                        filename => $messagePart->{filename},
-                        id => $messagePart->{body}->{attachmentId},
-                    }
-                ) if $messagePart->{filename};
+                if( $messagePart->{filename} ) {
+                    my $filename = encode( 'UTF-8', $messagePart->{filename} );
+                    my $show = $h->link(
+                        to => "/fetch/$message->{id}/$messagePart->{body}{attachmentId}/$filename",
+                        $filename
+                    ) if $messagePart->{filename} =~ m/jpg$|png$|doc$|pdf$/;
+                    $show //= $filename;
+
+                    push @attachments, $show;
+                }
             }
 
-            $metadata->{attachments} = $attachments;
+            $metadata->{attachments} = [ @attachments ];
 
             push @$messageData, $metadata;
         }
-        $c->stash( messages => $messageData );
     }
     else {
         return;
     }
 
-    $c->render(
-        template => 'checking',
+    my $mails = @$messageData ? 'New mails:' : 'No new mails, try again later';
+    foreach my $message ( @$messageData ) {
+        $mails .= $h->ul([ $message->{subj}. $h->ul( $message->{attachments} ) ])
+    }
+
+    $c->render( data => $h->html( 'Processing files - mails found',
+            out(
+                $h->h5( 'Checked mails' ).
+                $mails
+            ))
     );
 };
 
