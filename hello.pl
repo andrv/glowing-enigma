@@ -88,10 +88,31 @@ get '/list' => sub {
     my $c = shift;
     my $foundLocalFiles = checkLocalFiles();
 
-    $c->render(
-        template        => 'list',
-        action          => '',
-        foundLocalFiles => $foundLocalFiles,
+    my $localFilesList = '';
+
+    if( %$foundLocalFiles ) {
+        $localFilesList = "or process local files:";
+        foreach my $dir( keys %$foundLocalFiles ) {
+            my @files;
+
+            foreach my $file( @{$foundLocalFiles->{$dir}} ) {
+                push @files, $file;
+            }
+
+            $localFilesList .= $h->ul([
+                    "$dir:".
+                    $h->ul([ @files ]),
+                ])
+        }
+    }
+
+    $c->render( data => $h->html( 'Processing files',
+            out(
+                $h->h5( 'Working on the files' ).
+                "Check for".
+                $h->ul([ $h->link( to => '/check', 'mail' ) ]).
+                $localFilesList
+            ))
     );
 };
 
