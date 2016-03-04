@@ -75,13 +75,14 @@ get '/' => sub {
 get '/showConfig' => sub {
     my $c = shift;
 
+    my $ulContent = [];
+    while( my( $key, $value ) = each %$config ) {
+        push @$ulContent, "$key: $value";
+    }
+
     $c->render( data => $h->html( 'Show configuration', out(
                 $h->h5( 'Configuration:' ).
-                $h->ul([
-                        "App secrets location: $config->{appSecrets}",
-                        '-----',
-                        "Google app secrets: ". Dumper( $appSecrets ),
-                ])
+                $h->ul( $ulContent )
             ))
     );
 };
