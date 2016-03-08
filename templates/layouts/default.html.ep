@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= $title %></title>
+  </head>
+  <body>
+    <div id="nav">
+      <ul>
+        <li><%= link_to Home => '/' %></li>
+        <li><%= link_to Work => '/list' %></li>
+        <li><%= link_to Config => '/config' %></li>
+      </ul>
+    </div>
+    <div>
+      <%= content %>
+    </div>
+  </body>
+</html>

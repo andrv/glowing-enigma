@@ -1,0 +1,8 @@
+% layout 'default', title => 'Configuration';
+%= tag h5 => 'Configuration:'
+<ul>
+  %  while( my( $key, $value ) = each %$config ) {
+  %=     tag li => "$key: $value"
+  %  }
+</ul>
+<%= $out %>

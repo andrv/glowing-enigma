@@ -67,24 +67,22 @@ sub out {
 
 get '/' => sub {
     my $c = shift;
-    my $h = Html->new;
 
-    $c->render( data => $h->html( 'The beginn..', out() ) );
+    $c->render( template => 'index' );
 };
 
-get '/showConfig' => sub {
+get '/config' => sub {
     my $c = shift;
 
-    my $ulContent = [];
-    while( my( $key, $value ) = each %$config ) {
-        push @$ulContent, "$key: $value";
-    }
-
-    $c->render( data => $h->html( 'Show configuration', out(
-                $h->h5( 'Configuration:' ).
-                $h->ul( $ulContent )
-            ))
+    my $out = $c->tag(
+        ul => ( id => 'test' ) => sub { join "\n",
+            $c->tag( li => '<a href="/">test</a>' ),
+            $c->tag( li => sub { '<a href="/">test</a>' } ),
+            $c->tag( li => sub { $c->link_to( test => '/' ) } ),
+        }
     );
+
+    $c->render( template => 'config', out => $out );
 };
 
 get '/list' => sub {
@@ -231,7 +229,11 @@ get '/convert/#name' => sub {
 
     my $sourcePath = File::Spec->catfile( $sourceDir, $name );
     my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $convertedDir '$sourcePath');
+
+    $c->render( inline => "Trying convert file: $name\n" );
     system $converter;
+
+    $c->redirect_to( '/list' );
 
     $name =~ s/doc/html/;
     my $targetPath = File::Spec->catfile( $convertedDir, $name );
@@ -240,8 +242,6 @@ get '/convert/#name' => sub {
     my $dom = Mojo::DOM->new( $file->slurp );
 
     say $dom->at( 'title' )->all_text;
-
-    $c->render( inline => "Trying parse file: $name\n" );
 };
 
 app->start;
