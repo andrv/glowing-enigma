@@ -1,0 +1,6 @@
+% layout 'default', title 'Processing files:';
+<%= tag h5 => 'Working on files' %>
+<div>
+        Check for <%= link_to mail => '/check' %>
+<%= $dirs %>
+</div>

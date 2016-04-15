@@ -13,7 +13,8 @@ use Mojolicious::Lite;
 use Mojo::Asset::File;
 use Mojo::UserAgent;
 use Mojo::JSON qw( decode_json encode_json );
-use Mojo::Util qw( spurt encode );
+use Mojo::Util qw( spurt encode decode );
+use Mojo::ByteStream;
 use MIME::Base64::URLSafe;
 use Mojo::DOM;
 use File::Spec;
@@ -87,55 +88,29 @@ get '/config' => sub {
 
 get '/list' => sub {
     my $c = shift;
-    my $foundLocalFiles = checkLocalFiles();
 
-    my $localFilesList = '';
-
-    if( %$foundLocalFiles ) {
-        $localFilesList = "or process local files:";
-        foreach my $dir( keys %$foundLocalFiles ) {
-            my @files;
-
-            foreach my $file( @{$foundLocalFiles->{$dir}} ) {
-                $file = $h->link( to => "/convert/$file", $file ) if $dir eq $sourceDir;
-                $file = $h->link( to => "/parse/$file", $file ) if $dir eq $convertedDir;
-                push @files, $file;
-            }
-
-            $localFilesList .= $h->ul([
-                    "$dir:".
-                    $h->ul([ @files ]),
-                ])
-        }
-    }
-
-    $c->render( data => $h->html( 'Processing files',
-            out(
-                $h->h5( 'Working on the files' ).
-                "Check for".
-                $h->ul([ $h->link( to => '/check', 'mail' ) ]).
-                $localFilesList
-            ))
-    );
-};
-
-sub checkLocalFiles {
-    my $files = {};
+    my $dirs;
 
     foreach my $dir( $sourceDir, $convertedDir ) {
         opendir( my $dh, $dir ) or die "can't opendir $dir $!";
 
+        my $files;
         while( my $file = readdir $dh ) {
-            next unless -f File::Spec->catfile( $dir, $file );
+            next unless -f File::Spec->catfile($dir, $file);
             next unless $file =~ m/\.\w+$/;
-            push @{$files->{$dir}}, $file;
+            $files .= $c->tag(li => sub {$c->link_to(decode('UTF-8', $file) => "/convert/$file")}) if $dir eq $sourceDir;
+            $files .= $c->tag(li => sub {$c->link_to(decode('UTF-8', $file) => "/parse/$file")}) if $dir eq $convertedDir;
         }
+
+        $dirs .= $c->tag(ul => sub{
+                $c->tag(li => sub{"$dir:". $c->tag(ul => sub{ $files})})
+            }) if $files;
 
         closedir $dh;
     }
 
-    return $files;
-}
+    $c->render(template => 'list', dirs => Mojo::ByteStream->new($dirs));
+};
 
 get '/check' => sub {
     my $c = shift;
@@ -164,20 +139,17 @@ get '/check' => sub {
             my $res = $ua->get( $url )->res->json;
 
             foreach my $header( @{$res->{payload}->{headers}} ) {
-                $metadata->{subj} = encode( 'UTF-8', $header->{value} ) if $header->{name} eq 'Subject';
+                $metadata->{subj} = $header->{value} if $header->{name} eq 'Subject';
             }
 
             my @attachments;
-            foreach my $messagePart( @{$res->{payload}->{parts}} ) {
-                if( $messagePart->{filename} ) {
-                    my $filename = encode( 'UTF-8', $messagePart->{filename} );
-                    my $show = $h->link(
-                        to => "/fetch/$message->{id}/$messagePart->{body}{attachmentId}/$filename",
-                        $filename
-                    ) if $messagePart->{filename} =~ m/jpg$|png$|doc$|pdf$/;
-                    $show //= $filename;
+            foreach my $part(@{$res->{payload}{parts}}) {
+                if( $part->{filename} ) {
+                    my $fn = encode('UTF-8', $part->{filename});
+                    my $attach = {filename => $part->{filename}};
+                    $attach->{url} = "/fetch/$message->{id}/$part->{body}{attachmentId}/$fn" if $part->{filename} =~ m/jpg$|png$|doc$|pdf$/;
 
-                    push @attachments, $show;
+                    push @attachments, $attach;
                 }
             }
 
@@ -192,15 +164,22 @@ get '/check' => sub {
 
     my $mails = @$messageData ? 'New mails:' : 'No new mails, try again later';
     foreach my $message ( @$messageData ) {
-        $mails .= $h->ul([ $message->{subj}. $h->ul( $message->{attachments} ) ])
+        my $at;
+        foreach my $attach(@{$message->{attachments}}) {
+            $at .= $c->tag(li => $attach->{url}
+                ? sub{$c->link_to($attach->{filename} => $attach->{url})}
+                : $attach->{filename}
+            );
+        }
+
+        $mails .= $c->tag(ul => sub{
+                $c->tag(li => sub{
+                        $message->{subj}. $c->tag(ul => sub{$at})
+                    })
+            });
     }
 
-    $c->render( data => $h->html( 'Processing files - mails found',
-            out(
-                $h->h5( 'Checked mails' ).
-                $mails
-            ))
-    );
+    $c->render(template => 'check', mails => Mojo::ByteStream->new($mails));
 };
 
 get '/fetch/:message/:attachment/#name' => sub {
