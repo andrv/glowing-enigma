@@ -188,7 +188,7 @@ get '/fetch/:message/:attachment/#name' => sub {
 
 get '/convert/#name' => sub {
     my $c    = shift;
-    my $name = $c->stash( 'name' );
+    my $name = $c->stash('name');
 
     my $sourcePath = File::Spec->catfile( $sourceDir, $name );
     my $converter = qq(libreoffice --convert-to "html:XHTML Writer File:UTF8" --outdir $convertedDir '$sourcePath');
@@ -197,14 +197,20 @@ get '/convert/#name' => sub {
     system $converter;
 
     $c->redirect_to( '/list' );
+};
 
-    $name =~ s/doc/html/;
+get '/parse/#name' => sub {
+    my $c    = shift;
+    my $name = $c->stash('name');
+
     my $targetPath = File::Spec->catfile( $convertedDir, $name );
     my $file = Mojo::Asset::File->new( path => encode( 'UTF-8', $targetPath ) );
 
     my $dom = Mojo::DOM->new( $file->slurp );
 
     say $dom->at( 'title' )->all_text;
+
+    $c->redirect_to( '/list' );
 };
 
 app->start;
